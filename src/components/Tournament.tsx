@@ -105,14 +105,14 @@ const Tournament: React.FC<TournamentProps> = ({ tracks, onBack }) => {
             </div>
           </div>
           <button onClick={resetTournament} className="new-tournament-btn">
-            Nowy Turniej
+            Nowy turniej
           </button>
         </div>
         
         <TournamentBracket history={tournamentHistory} champion={champion} />
         
         <button onClick={onBack} className="new-tournament-btn">
-          Wróć do Wyboru Źródeł
+          Wróć do wyboru źródeł
         </button>
       </div>
     );
@@ -158,7 +158,7 @@ const Tournament: React.FC<TournamentProps> = ({ tracks, onBack }) => {
       </div>
       
       <button onClick={onBack} className="new-tournament-btn">
-        Wróć do Wyboru Źródeł
+        Wróć do wyboru źródeł
       </button>
     </div>
   );

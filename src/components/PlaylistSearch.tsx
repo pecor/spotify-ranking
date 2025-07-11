@@ -148,9 +148,6 @@ const PlaylistSearch: React.FC<PlaylistSearchProps> = ({
                   <h4>{playlist.name || 'Unknown Playlist'}</h4>
                   <p>{playlist.owner?.display_name || 'Unknown Owner'}</p>
                 </div>
-                <div className="selection-indicator">
-                  {isSelected(playlist.id) ? '✓' : '+'}
-                </div>
               </div>
             ))}
           </div>
