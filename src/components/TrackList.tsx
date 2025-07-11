@@ -34,11 +34,6 @@ const TrackList: React.FC<TrackListProps> = ({ tracks }) => {
             <div className="track-info">
               <h4>{track.name}</h4>
               <p>{track.artist}</p>
-              {track.preview_url ? (
-                <audio controls src={track.preview_url}></audio>
-              ) : (
-                <p style={{ color: '#666', fontSize: '0.8em' }}>Brak podglądu</p>
-              )}
             </div>
           </div>
         ))}

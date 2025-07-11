@@ -3,7 +3,8 @@ import SpotifyAuth from './components/SpotifyAuth';
 import PlaylistSearch from './components/PlaylistSearch';
 import TrackList from './components/TrackList';
 import Tournament from './components/Tournament';
-import { getTokenFromUrl } from './services/spotifyApi';
+import TournamentOptions from './components/TournamentOptions';
+import { getTokenFromUrl, getAlbumTracks, getPlaylistTracks } from './services/spotifyApi';
 import type { Track } from './types/spotify';
 import './App.css';
 
@@ -12,6 +13,8 @@ function App() {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [tournamentStarted, setTournamentStarted] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
+  const [selectedSources, setSelectedSources] = useState<{id: string, name: string, type: 'album' | 'playlist'}[]>([]);
+  const [view, setView] = useState<'auth' | 'playlists' | 'tournament-options' | 'tournament'>('auth');
 
   useEffect(() => {
     const checkForToken = async () => {
@@ -45,10 +48,45 @@ function App() {
     setTracks(loadedTracks);
   };
 
-  const startTournament = (): void => {
-    if (tracks.length >= 2) {
-      setTournamentStarted(true);
+  const handleSourceToggle = (source: {id: string, name: string, type: 'album' | 'playlist'}) => {
+    setSelectedSources(prev => {
+      const exists = prev.find(s => s.id === source.id);
+      if (exists) {
+        return prev.filter(s => s.id !== source.id)
+      } else {
+        return [...prev, source];
+      }
+    });
+  };
+
+  const loadAllSelectedTracks = async () => {
+    if (!token || selectedSources.length === 0) return;
+    
+    setLoading(true);
+    try {
+      let allTracks: Track[] = [];
+      
+      for (const source of selectedSources) {
+        let sourceTracks: Track[];
+        if (source.type === 'album') {
+          sourceTracks = await getAlbumTracks(source.id, token);
+        } else {
+          sourceTracks = await getPlaylistTracks(source.id, token);
+        }
+        allTracks = [...allTracks, ...sourceTracks];
+      }
+      
+      setTracks(allTracks);
+    } catch (error) {
+      console.error('Error loading tracks:', error);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const handleStartTournament = (finalTracks: Track[]) => {
+    setTracks(finalTracks);
+    setTournamentStarted(true);
   };
 
   const handleLogout = (): void => {
@@ -57,6 +95,26 @@ function App() {
     setToken(null);
     setTracks([]);
     setTournamentStarted(false);
+  };
+
+  const handleTracksSelected = (tracks: Track[]) => {
+    setTracks(tracks);
+    setView('tournament-options');
+  };
+
+  const handleBackToPlaylists = () => {
+    setView('playlists');
+    setTracks([]);
+  };
+
+  const handleBackToOptions = () => {
+    setView('tournament-options');
+  };
+
+  const startTournament = (): void => {
+    if (tracks.length >= 2) {
+      setView('tournament-options');
+    }
   };
 
   if (loading) {
@@ -71,6 +129,21 @@ function App() {
     return <Tournament tracks={tracks} onBack={() => setTournamentStarted(false)} />;
   }
 
+  if (view === 'tournament-options') {
+    return (
+      <div className="App">
+        <div className="header">
+          <h1>Spotify Music Tournament</h1>
+        </div>
+        <TournamentOptions 
+          tracks={tracks}
+          onStartTournament={handleStartTournament}
+          onBack={handleBackToPlaylists}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="App">
       <div className="header">
@@ -79,7 +152,30 @@ function App() {
           Wyloguj się
         </button>
       </div>
-      <PlaylistSearch token={token} onTracksLoaded={handleTracksLoaded} />
+      <PlaylistSearch 
+        token={token} 
+        onTracksLoaded={handleTracksLoaded}
+        selectedSources={selectedSources}
+        onSourceToggle={handleSourceToggle}
+      />
+      
+      {selectedSources.length > 0 && (
+        <div className="selected-sources">
+          <h3>Wybrane źródła ({selectedSources.length})</h3>
+          <div className="sources-list">
+            {selectedSources.map(source => (
+              <div key={source.id} className="selected-source">
+                <span>{source.name} ({source.type})</span>
+                <button onClick={() => handleSourceToggle(source)}>×</button>
+              </div>
+            ))}
+          </div>
+          <button onClick={loadAllSelectedTracks} disabled={loading}>
+            {loading ? 'Ładowanie...' : `Załaduj wszystkie piosenki (${selectedSources.length} źródeł)`}
+          </button>
+        </div>
+      )}
+      
       {tracks.length > 0 && (
         <>
           <TrackList tracks={tracks} />

@@ -111,16 +111,15 @@ export const getAlbumTracks = async (albumId: string, token: string): Promise<Tr
         name: item.name,
         artist: item.artists?.[0]?.name || 'Unknown Artist',
         preview_url: item.preview_url,
-        image: '' // Albumy nie mają obrazków w track endpoincie
+        image: ''
       }));
       
       allTracks = [...allTracks, ...tracks];
     }
     
-    url = data.next; // Następna strona albo null
+    url = data.next;
   }
   
-  // Pobierz obrazek albumu osobno
   const albumResponse = await fetch(`https://api.spotify.com/v1/albums/${albumId}`, {
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -130,7 +129,6 @@ export const getAlbumTracks = async (albumId: string, token: string): Promise<Tr
   const albumData = await albumResponse.json();
   const albumImage = albumData.images?.[0]?.url || '';
   
-  // Dodaj obrazek do wszystkich tracków
   return allTracks.map(track => ({
     ...track,
     image: albumImage
@@ -165,7 +163,7 @@ export const getPlaylistTracks = async (playlistId: string, token: string): Prom
       allTracks = [...allTracks, ...tracks];
     }
     
-    url = data.next; // Następna strona albo null
+    url = data.next;
   }
   
   return allTracks;

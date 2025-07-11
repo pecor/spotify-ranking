@@ -66,13 +66,45 @@ body {
   gap: 15px;
   margin: 10px auto;
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 2px solid #ddd;
   border-radius: 5px;
-  max-width: 80%;
+  max-width: 70%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  height: 80px;
+  min-height: 80px;
+  position: relative;
 }
 
-.search-item img {
-  flex-shrink: 0;
+.search-item::after {
+  content: "+";
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 24px;
+  font-weight: bold;
+  color: #1db954;
+  transition: all 0.3s ease;
+}
+
+.search-item.selected::after {
+  content: "✓";
+  color: #1db954;
+}
+
+.search-item:hover::after {
+  color: #1ed760;
+}
+
+.search-item:hover {
+  border-color: #1db954;
+  background-color: #f9f9f9;
+}
+
+.search-item.selected {
+  border-color: #1db954;
+  background-color: #e8f5e8;
 }
 
 .search-item div {
@@ -87,6 +119,7 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1.2;
 }
 
 .search-item p {
@@ -96,37 +129,72 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1.2;
 }
 
-.search-item button {
-  background-color: #1db954;
-  color: white;
-  border: none;
-  padding: 5px 10px;
+.search-item img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
   border-radius: 3px;
-  cursor: pointer;
-  font-size: 12px;
   flex-shrink: 0;
 }
 
-.search-item button:hover {
-  background-color: #1ed760;
+.selected-sources {
+  margin: 20px 0;
+  padding: 20px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f9f9f9;
 }
 
-.search-item button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
+.sources-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 10px 0;
+  align-items: center;
+  justify-content: center;
+}
+
+.selected-source {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  background-color: #1db954;
+  color: white;
+  border-radius: 15px;
+  font-size: 14px;
+}
+
+.selected-source button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 5px;
+}
+
+.selected-source button:hover {
+  color: #ffcccb;
 }
 
 .tournament {
   padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
 }
 
 .battle {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  margin: 40px 0;
+  margin: 40px auto;
+  max-width: 600px;
 }
 
 .track-option {
@@ -141,6 +209,14 @@ body {
 .track-option:hover {
   border-color: #1db954;
   background-color: #f0f8f0;
+}
+
+.track-option img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 10px;
 }
 
 .track-list {
@@ -167,6 +243,14 @@ body {
 
 .track-item img,
 .no-image-placeholder {
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.track-item img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
   border-radius: 3px;
   flex-shrink: 0;
 }
@@ -204,12 +288,22 @@ body {
 }
 
 .champion {
-  margin: 20px 0;
+  margin: 20px auto;
+  max-width: 400px;
+}
+
+.champion .track-item img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
 }
 
 .tournament-finished {
   text-align: center;
   padding: 40px;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .header {
@@ -235,8 +329,323 @@ body {
   cursor: pointer;
   font-size: 14px;
   flex-shrink: 0;
+  margin-top: 10px;
 }
 
 .logout-btn:hover {
   background-color: #d32f2f;
+}
+
+.tournament-bracket {
+  margin: 40px 0;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  width: 100vw;
+  max-width: none;
+  margin-left: calc(-50vw + 50%);
+  overflow-x: auto;
+}
+
+.bracket-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  width: 100%;
+  min-width: 1200px;
+  padding: 20px;
+  gap: 20px;
+}
+
+.bracket-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+  min-width: 300px;
+}
+
+.bracket-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 400px;
+  padding: 0 20px;
+}
+
+.bracket-rounds {
+  display: flex;
+  gap: 40px;
+  align-items: center;
+  width: 100%;
+  justify-content: space-evenly;
+}
+
+.bracket-round {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 400px;
+  flex: 1;
+  gap: 15px;
+}
+
+.bracket-match {
+  position: relative;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 300px;
+  margin: 8px auto;
+}
+
+.bracket-seed {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  gap: 8px;
+  border-left: 4px solid #ddd;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid #eee;
+}
+
+.bracket-seed:last-child {
+  border-bottom: none;
+}
+
+.bracket-seed.winner {
+  background-color: #e8f5e8;
+  border-left-color: #1db954;
+  font-weight: bold;
+}
+
+.bracket-seed.loser {
+  background-color: #f5f5f5;
+  border-left-color: #ddd;
+  opacity: 0.7;
+}
+
+.bracket-seed img {
+  width: 30px;
+  height: 30px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.seed-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.seed-name {
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 2px;
+}
+
+.seed-artist {
+  font-size: 10px;
+  color: #666;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bracket-match::after {
+  content: '';
+  position: absolute;
+  right: -30px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 2px;
+  background-color: #1db954;
+}
+
+.bracket-right .bracket-match::after {
+  left: -30px;
+  right: auto;
+}
+
+.bracket-match::before {
+  content: '';
+  position: absolute;
+  right: -30px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 60px;
+  background-color: #1db954;
+}
+
+.bracket-right .bracket-match::before {
+  left: -30px;
+  right: auto;
+}
+
+.champion-final {
+  text-align: center;
+  margin-bottom: 40px;
+  margin-top: 20px;
+}
+
+.champion-final h4 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #1db954;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+.champion-card {
+  background-color: white;
+  border-radius: 15px;
+  padding: 30px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  border: 4px solid #1db954;
+  max-width: 350px;
+  margin: 0 auto;
+  transform: scale(1.1);
+}
+
+.champion-card img {
+  width: 120px;
+  height: 120px;
+  border-radius: 12px;
+  object-fit: cover;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.champion-info {
+  text-align: center;
+}
+
+.champion-name {
+  font-size: 20px;
+  font-weight: bold;
+  color: #1db954;
+  margin-bottom: 8px;
+}
+
+.champion-artist {
+  font-size: 16px;
+  color: #666;
+  font-weight: 500;
+}
+
+.final-round {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.new-tournament-btn {
+  background-color: #1db954;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  margin-top: 40px;
+  transition: all 0.3s ease;
+}
+
+.new-tournament-btn:hover {
+  background-color: #1ed760;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.tournament-options {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.options {
+  margin: 30px 0;
+}
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: 20px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  margin-bottom: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.option:hover {
+  border-color: #1db954;
+  background-color: #f0f8f0;
+}
+
+.option input[type="radio"] {
+  margin-top: 5px;
+}
+
+.option input[type="radio"]:checked + div {
+  color: #1db954;
+}
+
+.option div strong {
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+
+.option div p {
+  color: #666;
+  margin: 5px 0;
+}
+
+.option div small {
+  color: #999;
+  font-style: italic;
+}
+
+.tournament-actions {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.back-btn {
+  background-color: #666;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.back-btn:hover {
+  background-color: #555;
+}
+
+.start-tournament-btn {
+  background-color: #1db954;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.start-tournament-btn:hover {
+  background-color: #1ed760;
 }

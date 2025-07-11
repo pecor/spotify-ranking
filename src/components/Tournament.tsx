@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import TournamentBracket from './TournamentBracket';
 import type { Track } from '../types/spotify';
 
 interface TournamentProps {
   tracks: Track[];
   onBack: () => void;
+}
+
+interface RoundHistory {
+  roundNumber: number;
+  pairs: { track1: Track; track2: Track; winner: Track }[];
 }
 
 const Tournament: React.FC<TournamentProps> = ({ tracks, onBack }) => {
@@ -12,107 +18,148 @@ const Tournament: React.FC<TournamentProps> = ({ tracks, onBack }) => {
   const [winners, setWinners] = useState<Track[]>([]);
   const [champion, setChampion] = useState<Track | null>(null);
   const [roundNumber, setRoundNumber] = useState<number>(1);
+  const [tournamentHistory, setTournamentHistory] = useState<RoundHistory[]>([]);
+  const [eliminatedTracks, setEliminatedTracks] = useState<Track[]>([]);
 
   useEffect(() => {
-    // Shuffle tracks and start first round
     const shuffled = [...tracks].sort(() => Math.random() - 0.5);
     setCurrentRound(shuffled);
   }, [tracks]);
 
   const selectWinner = (winner: Track): void => {
-    const newWinners = [...winners, winner];
-    setWinners(newWinners);
+    const track1 = currentRound[currentPair * 2];
+    const track2 = currentRound[currentPair * 2 + 1];
+    const loser = winner.id === track1.id ? track2 : track1;
 
-    if (currentPair + 1 < Math.floor(currentRound.length / 2)) {
-      // More pairs in current round
-      setCurrentPair(currentPair + 1);
-    } else {
-      // Round finished
-      if (newWinners.length === 1) {
-        // Tournament finished
-        setChampion(newWinners[0]);
+    setEliminatedTracks(prev => [...prev, loser]);
+
+    setTournamentHistory(prev => {
+      const existingRound = prev.find(h => h.roundNumber === roundNumber);
+      if (existingRound) {
+        const pairExists = existingRound.pairs.some(p => 
+          (p.track1.id === track1.id && p.track2.id === track2.id) ||
+          (p.track1.id === track2.id && p.track2.id === track1.id)
+        );
+        if (!pairExists) {
+          existingRound.pairs.push({ track1, track2, winner });
+        }
+        return [...prev];
       } else {
-        // Start next round
-        setCurrentRound(newWinners);
-        setWinners([]);
+        return [...prev, {
+          roundNumber,
+          pairs: [{ track1, track2, winner }]
+        }];
+      }
+    });
+
+    setWinners([...winners, winner]);
+    setCurrentPair(currentPair + 1);
+
+    if (currentPair + 1 >= Math.floor(currentRound.length / 2)) {
+      const roundWinners = [...winners, winner];
+      
+      if (roundWinners.length === 1) {
+        setChampion(roundWinners[0]);
+      } else {
+        let nextRound = [...roundWinners];
+        
+        if (nextRound.length % 2 !== 0 && eliminatedTracks.length > 0) {
+          const randomLoser = eliminatedTracks[Math.floor(Math.random() * eliminatedTracks.length)];
+          nextRound.push(randomLoser);
+          
+          setEliminatedTracks(prev => prev.filter(t => t.id !== randomLoser.id));
+        }
+        
+        setCurrentRound(nextRound);
         setCurrentPair(0);
+        setWinners([]);
         setRoundNumber(roundNumber + 1);
       }
     }
   };
 
-  if (champion) {
-    return (
-      <div className="tournament-finished">
-        <h1>🏆 Zwycięzca Turnieju! 🏆</h1>
-        <div className="champion">
-          <img 
-            src={champion.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjZGRkIi8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjE2cHgiIGZpbGw9IiM5OTkiPldJTk5FUjwvdGV4dD4KPHN2Zz4='} 
-            alt={champion.name} 
-            width="200" 
-          />
-          <h2>{champion.name}</h2>
-          <h3>{champion.artist}</h3>
-          {champion.preview_url && (
-            <audio controls src={champion.preview_url}></audio>
-          )}
-        </div>
-        <button onClick={onBack}>Nowy turniej</button>
-      </div>
-    );
-  }
-
-  if (currentRound.length < 2) {
-    return <div>Potrzebujesz przynajmniej 2 piosenki do turnieju!</div>;
-  }
+  const resetTournament = (): void => {
+    const shuffled = [...tracks].sort(() => Math.random() - 0.5);
+    setCurrentRound(shuffled);
+    setCurrentPair(0);
+    setWinners([]);
+    setChampion(null);
+    setRoundNumber(1);
+    setTournamentHistory([]);
+    setEliminatedTracks([]);
+  };
 
   const track1 = currentRound[currentPair * 2];
   const track2 = currentRound[currentPair * 2 + 1];
 
+  if (champion) {
+    return (
+      <div className="tournament-finished">
+        <div className="champion">
+          <h2>🏆 CHAMPION! 🏆</h2>
+          <div className="track-item">
+            <img src={champion.image} alt={champion.name} />
+            <div className="track-info">
+              <h3>{champion.name}</h3>
+              <p>{champion.artist}</p>
+            </div>
+          </div>
+          <button onClick={resetTournament} className="new-tournament-btn">
+            Nowy Turniej
+          </button>
+        </div>
+        
+        <TournamentBracket history={tournamentHistory} champion={champion} />
+        
+        <button onClick={onBack} className="new-tournament-btn">
+          Wróć do Wyboru Źródeł
+        </button>
+      </div>
+    );
+  }
+
   if (!track1 || !track2) {
-    return <div>Ładowanie następnej rundy...</div>;
+    return <div>Ładowanie...</div>;
   }
 
   return (
     <div className="tournament">
-      <h1>Turniej Muzyczny - Runda {roundNumber}</h1>
-      <p>Wybierz lepszą piosenkę ({currentPair + 1}/{Math.floor(currentRound.length / 2)})</p>
+      <h2>Turniej: Runda {roundNumber}</h2>
+      <p>Mecz {currentPair + 1} z {Math.floor(currentRound.length / 2)}</p>
+      
+      {/* Pokaż listę przegranych jeśli są */}
+      {/* {eliminatedTracks.length > 0 && (
+        <div style={{ 
+          fontSize: '12px', 
+          color: '#666', 
+          marginBottom: '10px',
+          padding: '10px',
+          backgroundColor: '#f0f0f0',
+          borderRadius: '5px'
+        }}>
+          Przegrani ({eliminatedTracks.length}): {eliminatedTracks.map(t => t.name).join(', ')}
+        </div>
+      )} */}
       
       <div className="battle">
         <div className="track-option" onClick={() => selectWinner(track1)}>
-          <img 
-            src={track1.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjZGRkIi8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjE0cHgiIGZpbGw9IiM5OTkiPk5PIElNQUdFPC90ZXh0Pgo8L3N2Zz4='} 
-            alt={track1.name} 
-            width="150" 
-          />
+          <img src={track1.image} alt={track1.name} />
           <h3>{track1.name}</h3>
           <p>{track1.artist}</p>
-          {track1.preview_url ? (
-            <audio controls src={track1.preview_url}></audio>
-          ) : (
-            <p style={{color: '#666', fontSize: '0.8em'}}>Brak podglądu</p>
-          )}
         </div>
         
         <div className="vs">VS</div>
         
         <div className="track-option" onClick={() => selectWinner(track2)}>
-          <img 
-            src={track2.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgdmlld0JveD0iMCAwIDE1MCAxNTAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIiBmaWxsPSIjZGRkIi8+Cjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LXNpemU9IjE0cHgiIGZpbGw9IiM5OTkiPk5PIElNQUdFPC90ZXh0Pgo8L3N2Zz4='} 
-            alt={track2.name} 
-            width="150" 
-          />
+          <img src={track2.image} alt={track2.name} />
           <h3>{track2.name}</h3>
           <p>{track2.artist}</p>
-          {track2.preview_url ? (
-            <audio controls src={track2.preview_url}></audio>
-          ) : (
-            <p style={{color: '#666', fontSize: '0.8em'}}>Brak podglądu</p>
-          )}
         </div>
       </div>
       
-      <button onClick={onBack}>Powrót</button>
+      <button onClick={onBack} className="new-tournament-btn">
+        Wróć do Wyboru Źródeł
+      </button>
     </div>
   );
 };
