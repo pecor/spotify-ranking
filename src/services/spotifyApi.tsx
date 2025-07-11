@@ -1,4 +1,4 @@
-import type { SpotifySearchResponse, SpotifyTracksResponse } from '../types/spotify';
+import type { SpotifySearchResponse, SpotifyTracksResponse, Track } from '../types/spotify';
 
 const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
 const REDIRECT_URI = import.meta.env.VITE_SPOTIFY_REDIRECT_URI;
@@ -92,33 +92,81 @@ export const searchTracks = async (query: string, token: string): Promise<Spotif
   return response.json();
 };
 
-export const getAlbumTracks = async (albumId: string, token: string): Promise<SpotifyTracksResponse> => {
-  const response = await fetch(`https://api.spotify.com/v1/albums/${albumId}/tracks`, {
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
-  });
-  const data = await response.json();
+export const getAlbumTracks = async (albumId: string, token: string): Promise<Track[]> => {
+  let allTracks: Track[] = [];
+  let url = `https://api.spotify.com/v1/albums/${albumId}/tracks?limit=50`;
   
-  const trackIds = data.items.map((track: any) => track.id).join(',');
-  const tracksResponse = await fetch(`https://api.spotify.com/v1/tracks?ids=${trackIds}`, {
-    headers: {
-      'Authorization': `Bearer ${token}`
+  while (url) {
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    
+    const data = await response.json();
+    
+    if (data.items) {
+      const tracks = data.items.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        artist: item.artists?.[0]?.name || 'Unknown Artist',
+        preview_url: item.preview_url,
+        image: '' // Albumy nie mają obrazków w track endpoincie
+      }));
+      
+      allTracks = [...allTracks, ...tracks];
     }
-  });
-  const tracksData = await tracksResponse.json();
+    
+    url = data.next; // Następna strona albo null
+  }
   
-  return {
-    ...data,
-    items: tracksData.tracks
-  };
+  // Pobierz obrazek albumu osobno
+  const albumResponse = await fetch(`https://api.spotify.com/v1/albums/${albumId}`, {
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+  });
+  
+  const albumData = await albumResponse.json();
+  const albumImage = albumData.images?.[0]?.url || '';
+  
+  // Dodaj obrazek do wszystkich tracków
+  return allTracks.map(track => ({
+    ...track,
+    image: albumImage
+  }));
 };
 
-export const getPlaylistTracks = async (playlistId: string, token: string): Promise<SpotifyTracksResponse> => {
-  const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistId}/tracks`, {
-    headers: {
-      'Authorization': `Bearer ${token}`
+export const getPlaylistTracks = async (playlistId: string, token: string): Promise<Track[]> => {
+  let allTracks: Track[] = [];
+  let url = `https://api.spotify.com/v1/playlists/${playlistId}/tracks?limit=50`;
+  
+  while (url) {
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    
+    const data = await response.json();
+    
+    if (data.items) {
+      const tracks = data.items.map((item: any) => {
+        const track = item.track;
+        return {
+          id: track.id,
+          name: track.name,
+          artist: track.artists?.[0]?.name || 'Unknown Artist',
+          preview_url: track.preview_url,
+          image: track.album?.images?.[0]?.url || ''
+        };
+      });
+      
+      allTracks = [...allTracks, ...tracks];
     }
-  });
-  return response.json();
+    
+    url = data.next; // Następna strona albo null
+  }
+  
+  return allTracks;
 };

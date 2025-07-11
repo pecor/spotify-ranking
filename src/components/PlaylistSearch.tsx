@@ -27,39 +27,30 @@ const PlaylistSearch: React.FC<PlaylistSearchProps> = ({ token, onTracksLoaded }
     setLoading(false);
   };
 
-  const loadTracks = async (type: 'album' | 'playlist', id: string): Promise<void> => {
-    console.log(`DEBUG - Loading ${type} tracks for ID:`, id);
+  const loadTracks = async (type: 'album' | 'playlist', id: string) => {
     setLoading(true);
     try {
-      let tracksData;
+      let tracksData: Track[];
+      
       if (type === 'album') {
         tracksData = await getAlbumTracks(id, token);
-      } else if (type === 'playlist') {
+      } else {
         tracksData = await getPlaylistTracks(id, token);
       }
       
-      console.log('DEBUG - Raw tracks data:', tracksData);
+      console.log('DEBUG - Tracks loaded:', tracksData);
       
-      if (tracksData) {
-        const tracks: Track[] = tracksData.items.map(item => {
-          const track = 'track' in item ? item.track : item;
-          console.log('DEBUG - Processing track:', track);
-          return {
-            id: track.id,
-            name: track.name,
-            artist: track.artists?.[0]?.name || 'Unknown Artist',
-            preview_url: track.preview_url,
-            image: track.album?.images?.[0]?.url || ''
-          };
-        });
-
-        console.log('DEBUG - Final tracks array:', tracks);
-        onTracksLoaded(tracks);
+      if (tracksData && tracksData.length > 0) {
+        console.log('DEBUG - Final tracks array:', tracksData);
+        onTracksLoaded(tracksData);
+      } else {
+        console.log('DEBUG - No tracks found');
       }
     } catch (error) {
-      console.error('Load tracks error:', error);
+      console.error('Error loading tracks:', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
