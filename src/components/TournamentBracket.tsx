@@ -205,7 +205,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ history, champion
           </div>
         </div> */}
         
-        <div className="bracket-wrapper">
+        <div className="bracket-wrapper" style={{ minWidth: `${200 * (leftRounds.length + reversedRightRounds.length + 1)}px` }}>
           {/* Lewa strona - rundy 1, 2, 3...*/}
           <div className="bracket-side bracket-left">
             <div className="bracket-rounds">
