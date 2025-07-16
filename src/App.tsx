@@ -145,8 +145,6 @@ function App() {
     );
   }
 
-  const currentYear = new Date().getFullYear();
-
   return (
     <div className="App">
       <div className="header">
@@ -161,7 +159,7 @@ function App() {
       
       {selectedSources.length > 0 && (
         <div className="selected-sources">
-          <h3>Wybrane źródła ({selectedSources.length})</h3>
+          <h3>Wybrane źródła</h3>
           <div className="sources-list">
             {selectedSources.map(source => (
               <div key={source.id} className="selected-source">

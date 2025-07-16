@@ -340,12 +340,11 @@ body {
 
 .header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-  margin-bottom: 20px;
-  padding: 0;
   max-width: 800px;
   margin: 0 auto 20px auto;
+  padding: 0;
 }
 
 .header h1 {
@@ -436,13 +435,13 @@ body {
 .app-footer {
   width: 100%;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   padding: 28px 16px 18px 16px;
   margin-top: 20px;
   font-size: 16px;
-  gap: 32px;
+  gap: 18px;
   position: relative;
   z-index: 10;
 }
@@ -490,26 +489,13 @@ body {
   font-size: 16px;
   cursor: pointer;
   font-weight: 600;
-  margin-left: 32px;
   box-shadow: 0 2px 12px #0002;
   transition: background 0.18s, transform 0.18s;
+  width: 100%;
+  max-width: 260px;
 }
 
 .footer-logout-btn:hover {
   background: linear-gradient(90deg, #d32f2f 60%, #f44336 100%);
   transform: translateY(-2px) scale(1.04);
-}
-
-@media (max-width: 600px) {
-  .app-footer {
-    flex-direction: column;
-    gap: 18px;
-    padding: 22px 6px 12px 6px;
-    border-radius: 16px 16px 0 0;
-  }
-  .footer-logout-btn {
-    margin-left: 0;
-    width: 100%;
-    max-width: 260px;
-  }
 }
