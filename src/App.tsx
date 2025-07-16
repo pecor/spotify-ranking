@@ -7,6 +7,7 @@ import TournamentOptions from './components/TournamentOptions';
 import { getTokenFromUrl, getAlbumTracks, getPlaylistTracks } from './services/spotifyApi';
 import type { Track } from './types/spotify';
 import './App.css';
+import Footer from './components/Footer';
 
 function App() {
   const [token, setToken] = useState<string | null>(null);
@@ -133,7 +134,7 @@ function App() {
     return (
       <div className="App">
         <div className="header">
-          <h1>Spotify Music Tournament</h1>
+          <h1>Music Tournament</h1>
         </div>
         <TournamentOptions 
           tracks={tracks}
@@ -144,13 +145,12 @@ function App() {
     );
   }
 
+  const currentYear = new Date().getFullYear();
+
   return (
     <div className="App">
       <div className="header">
-        <h1>Spotify Music Tournament</h1>
-        <button onClick={handleLogout} className="logout-btn">
-          Wyloguj się
-        </button>
+        <h1>Music Tournament</h1>
       </div>
       <PlaylistSearch 
         token={token} 
@@ -184,6 +184,8 @@ function App() {
           </button>
         </>
       )}
+
+      <Footer onLogout={handleLogout} />
     </div>
   );
 }

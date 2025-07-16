@@ -97,11 +97,11 @@ const Tournament: React.FC<TournamentProps> = ({ tracks, onBack }) => {
       <div className="tournament-finished">
         <div className="champion">
           <h2>🏆 CHAMPION! 🏆</h2>
-          <div className="track-item">
+          <div className="champion-card">
             <img src={champion.image} alt={champion.name} />
-            <div className="track-info">
-              <h3>{champion.name}</h3>
-              <p>{champion.artist}</p>
+            <div className="champion-info">
+              <div className="champion-name">{champion.name}</div>
+              <div className="champion-artist">{champion.artist}</div>
             </div>
           </div>
           <button onClick={resetTournament} className="new-tournament-btn">

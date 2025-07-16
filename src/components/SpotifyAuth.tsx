@@ -9,7 +9,7 @@ const SpotifyAuth = () => {
 
   return (
     <div className="auth-container">
-      <h1>Spotify Music Tournament</h1>
+      <h1>Music Tournament</h1>
       <p>Zaloguj się do Spotify, aby rozpocząć turniej muzyczny</p>
       <button onClick={handleLogin}>Zaloguj się do Spotify</button>
     </div>
