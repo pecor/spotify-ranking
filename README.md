@@ -52,3 +52,8 @@ src/
 - [ ] Eksport wyników
 - [ ] Dark mode
 - [ ] Podgląd audio
+
+<img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/98e54e7a-c02d-44cb-8033-2973500af673" />
+<img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/fac5abae-edfc-43ac-a55f-0292e1cb912c" />
+<img width="1920" height="1080" alt="Image" src="https://github.com/user-attachments/assets/3ec7a8df-d97c-4bb6-9cf9-cff97a569c34" />
+<img width="3790" height="3355" alt="Image" src="https://github.com/user-attachments/assets/239e919e-367a-4057-87ba-61a2838d3869" />
